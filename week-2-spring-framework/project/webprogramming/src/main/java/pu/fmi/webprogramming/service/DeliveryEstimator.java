@@ -10,25 +10,23 @@ public class DeliveryEstimator {
 
   public LocalDateTime estimateArrivalTime(Delivery delivery) {
 
-    // В Delivery е добавено ново поле LocalDateTime estimatedArrivalAt
-    // Този метод се използва в createDelivery на DeliveryService
+    LocalDateTime createdAt = delivery.getCreatedAt();
 
-    // TODO: Довършване на имплементацията за изчисляване на очаквана дата на доставка
-    // * Провери дали градовете на склада и клиента съвпадат:
-    //   → При съвпадащи градове:
-    //     - очаквана дата на доставка трябва да е 1 ден след датата на създаване на доставка
-    //   → При различни градове между склада и този на клиента:
-    //     - очаквана дата на доставка трябва да е 3 дни след датата на създаване на доставка
-    //
-    // * Провери и наличността на куриер:
-    //   → Ако няма назначен куриер:
-    //     - Добави още 2 дни закъснение към вече изчислената дата
-    //
-    // ВАЖНО:
-    // * Всички предоставени Unit тестове (DeliveryServiceTest) трябва да минават успешно
-    // * Не променяйте тестовете
-    // * Не променяйте сигнатурата на метода
+    int daysToAdd;
 
-    return null;
+    // Check if cities match
+    if (delivery.getWarehouse().getCity()
+            .equals(delivery.getCustomer().getCity())) {
+      daysToAdd = 1;
+    } else {
+      daysToAdd = 3;
+    }
+
+    // Check if courier is assigned
+    if (delivery.getCourier() == null) {
+      daysToAdd += 2;
+    }
+
+    return createdAt.plusDays(daysToAdd);
   }
 }
