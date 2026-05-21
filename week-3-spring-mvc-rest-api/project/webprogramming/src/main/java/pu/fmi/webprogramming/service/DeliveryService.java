@@ -102,26 +102,43 @@ public class DeliveryService implements DeliveryServiceInterface {
   @Override
   public Delivery assignCourier(Long id, Long courierId) {
 
-    // TODO: Довършване на имплементацията за промяна на доставчика за дадена поръчка
-    // (използвай добавената логика в новото REST API - PUT '/api/deliveries/{id}/courier')
+    Delivery delivery =
+            deliveryRepository.findAllDeliveries()
+                    .stream()
+                    .filter(d -> d.getId().equals(id))
+                    .findFirst()
+                    .orElse(null);
 
-    // * Проверете дали доставка с такова id съществува:
-    //    → Ако не е намерена, хвърлете грешка (DeliveryCustomException) със съобщение "Delivery not found"
-    // * Проверете дали съществува куриер с подаденото courierId:
-    //    → Ако не е намерен, грешка със съобщение "Courier not found"
-    // * Проверете дали куриера е наличен:
-    //    → Ако не е наличен, грешка със съобщение "Courier is not available"
-    // * Ако всички валидации минат успешно
-    //    → Назначи куриера на доставката, смени статуса на ASSIGNED и използвай логиката
-    //      от предното домашно за изчисляване очаквана дата на доставка
-    // * Маркирай куриера като зает
+    if (delivery == null) {
+      throw new DeliveryCustomException("Delivery not found");
+    }
 
-    // ВАЖНО:
-    // * Всички предоставени Unit тестове (DeliveryApiTest) трябва да минават успешно
-    // * Не променяйте тестовете
-    // * Не променяйте сигнатурата на метода
+    Courier courier =
+            courierRepository.getAllCouriers()
+                    .stream()
+                    .filter(c -> c.getId().equals(courierId))
+                    .findFirst()
+                    .orElse(null);
 
-   return null;
+    if (courier == null) {
+      throw new DeliveryCustomException("Courier not found");
+    }
+
+    if (!courier.isAvailable()) {
+      throw new DeliveryCustomException("Courier is not available");
+    }
+
+    delivery.setCourier(courier);
+
+    delivery.setDeliveryStatus(DeliveryStatusEnum.ASSIGNED);
+
+    delivery.setEstimatedArrivalAt(
+            LocalDateTime.now().plusDays(1)
+    );
+
+    courier.setAvailable(false);
+
+    return delivery;
   }
 
   private boolean isStatusValid(DeliveryStatusEnum currentStatus, DeliveryStatusEnum newStatus) {
